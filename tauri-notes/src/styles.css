@@ -1,0 +1,132 @@
+:root {
+  font-family: "Microsoft YaHei", sans-serif;
+  color: #1f2328;
+  background: #f3f6fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+}
+
+.container {
+  max-width: 720px;
+  margin: 40px auto;
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(31, 35, 40, 0.08);
+}
+
+h1 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 32px;
+}
+
+.tip {
+  margin-top: 0;
+  margin-bottom: 24px;
+  color: #5c6773;
+}
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+input,
+textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #cfd8e3;
+  border-radius: 10px;
+  font-size: 16px;
+  background: #fff;
+}
+
+textarea {
+  resize: vertical;
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+button {
+  padding: 12px 18px;
+  border: none;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+#message {
+  margin-top: 16px;
+  color: #4b5563;
+}
+
+h2 {
+  margin-top: 28px;
+  margin-bottom: 12px;
+  font-size: 22px;
+}
+
+#notes-list {
+  display: grid;
+  gap: 12px;
+}
+
+.note-card {
+  padding: 16px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #dbe4ee;
+  color: #334155;
+}
+
+.note-card p {
+  margin: 6px 0;
+}
+
+.empty-notes {
+  padding: 16px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  color: #64748b;
+}
+
+.button-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.secondary-btn {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.secondary-btn:hover {
+  background: #d1d5db;
+}
