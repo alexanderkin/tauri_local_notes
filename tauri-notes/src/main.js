@@ -3,41 +3,94 @@ const { invoke } = window.__TAURI__.core;
 const titleInput = document.querySelector("#note-title");
 const contentInput = document.querySelector("#note-content");
 const saveButton = document.querySelector("#save-btn");
+const cancelEditButton = document.querySelector("#cancel-edit-btn");
 const clearButton = document.querySelector("#clear-btn");
 const message = document.querySelector("#message");
 const notesList = document.querySelector("#notes-list");
+const searchInput = document.querySelector("#search-input");
+
+let allNotes = [];
+let editingNoteId = null;
+
+function exitEditMode() {
+  editingNoteId = null;
+  titleInput.value = "";
+  contentInput.value = "";
+  saveButton.textContent = "保存笔记";
+  cancelEditButton.hidden = true;
+  titleInput.focus();
+}
+
+function renderNotes(notes, emptyMessage = "没有找到匹配的笔记。") {
+  if (notes.length === 0) {
+    notesList.innerHTML = `<div class="empty-notes">${emptyMessage}</div>`;
+    return;
+  }
+
+  notesList.innerHTML = notes
+    .map((note) => {
+      return `
+        <div class="note-card">
+          <p>时间：${note.time}</p>
+          <p><strong>标题：${note.title}</strong></p>
+          <p>内容：${note.content}</p>
+          <div class="note-actions">
+            <button class="edit-note-btn" data-id="${note.id}">编辑</button>
+            <button class="delete-note-btn" data-id="${note.id}">删除这条</button>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+
+  document.querySelectorAll(".edit-note-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      const id = button.dataset.id;
+      const note = allNotes.find((item) => item.id === id);
+
+      if (!note) {
+        message.textContent = "要编辑的笔记不存在。";
+        return;
+      }
+
+      editingNoteId = note.id;
+      titleInput.value = note.title;
+      contentInput.value = note.content;
+      saveButton.textContent = "更新笔记";
+      cancelEditButton.hidden = false;
+      message.textContent = "正在编辑这条笔记。";
+      titleInput.focus();
+    });
+  });
+
+  document.querySelectorAll(".delete-note-btn").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const confirmed = window.confirm("确定要删除这条笔记吗？这个操作不能撤销。");
+
+      if (!confirmed) {
+        message.textContent = "已取消删除操作。";
+        return;
+      }
+
+      const id = button.dataset.id;
+
+      try {
+        const result = await invoke("delete_note", { id });
+        message.textContent = result;
+        await refreshNotes();
+      } catch (error) {
+        message.textContent = `删除失败：${error}`;
+      }
+    });
+  });
+}
 
 async function refreshNotes() {
   try {
     const result = await invoke("load_notes");
+    allNotes = JSON.parse(result);
 
-    if (result === "还没有保存任何笔记。") {
-      notesList.innerHTML = '<div class="empty-notes">还没有保存任何笔记。</div>';
-      return;
-    }
-
-    const notes = result
-      .split("--------------------")
-      .map((item) => item.trim())
-      .filter((item) => item);
-
-    notesList.innerHTML = notes
-      .map((note) => {
-        const lines = note.split("\n");
-
-        const timeLine = lines.find((line) => line.startsWith("时间：")) || "时间：未记录";
-        const titleLine = lines.find((line) => line.startsWith("标题：")) || "标题：无标题";
-        const contentLine = lines.find((line) => line.startsWith("内容：")) || "内容：无内容";
-
-        return `
-          <div class="note-card">
-            <p>${timeLine}</p>
-            <p><strong>${titleLine}</strong></p>
-            <p>${contentLine}</p>
-          </div>
-        `;
-      })
-      .join("");
+    renderNotes(allNotes, "还没有保存任何笔记。");
   } catch (error) {
     notesList.textContent = `读取笔记失败：${error}`;
   }
@@ -53,19 +106,34 @@ saveButton.addEventListener("click", async () => {
   }
 
   try {
-    const result = await invoke("save_note", { title, content });
-    message.textContent = result;
+    let result;
 
-    // 保存成功后，重新读取最新笔记内容
+    if (editingNoteId) {
+      result = await invoke("update_note", {
+        id: editingNoteId,
+        title,
+        content,
+      });
+
+      exitEditMode();
+    } else {
+      result = await invoke("save_note", { title, content });
+    }
+
+    message.textContent = result;
     await refreshNotes();
 
-    // 保存成功后清空输入框，方便继续记录下一条
     titleInput.value = "";
     contentInput.value = "";
     titleInput.focus();
   } catch (error) {
-    message.textContent = `保存失败：${error}`;
+    message.textContent = `操作失败：${error}`;
   }
+});
+
+cancelEditButton.addEventListener("click", () => {
+  exitEditMode();
+  message.textContent = "已取消编辑。";
 });
 
 clearButton.addEventListener("click", async () => {
@@ -83,6 +151,24 @@ clearButton.addEventListener("click", async () => {
   } catch (error) {
     message.textContent = `清空失败：${error}`;
   }
+});
+
+searchInput.addEventListener("input", () => {
+  const keyword = searchInput.value.trim().toLowerCase();
+
+  if (!keyword) {
+    renderNotes(allNotes);
+    return;
+  }
+
+  const filteredNotes = allNotes.filter((note) => {
+    return (
+      note.title.toLowerCase().includes(keyword) ||
+      note.content.toLowerCase().includes(keyword)
+    );
+  });
+
+  renderNotes(filteredNotes);
 });
 
 

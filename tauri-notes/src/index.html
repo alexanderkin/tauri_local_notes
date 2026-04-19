@@ -28,11 +28,16 @@
 
       <div class="button-group">
         <button id="save-btn">保存笔记</button>
+        <button id="cancel-edit-btn" class="secondary-btn" hidden>取消编辑</button>
         <button id="clear-btn" class="secondary-btn">清空全部笔记</button>
       </div>
 
       <p id="message">这里以后会显示保存结果。</p>
-      <h2>已保存的笔记</h2>
+      <div class="notes-header">
+        <h2>已保存的笔记</h2>
+        <input id="search-input" type="text" placeholder="搜索标题或内容" />
+      </div>
+
       <div id="notes-list">这里以后会显示笔记内容。</div>
     </main>
 
